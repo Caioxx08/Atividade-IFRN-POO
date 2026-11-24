@@ -1,0 +1,440 @@
+from datetime import datetime, timedelta
+
+# ==============================================================================
+# 1. APLICAÇÃO TREINO
+# ==============================================================================
+
+class Treino:
+    def __init__(self, id: int, data: datetime, distancia: float, tempo: timedelta):
+        self.__id = id
+        self.__data = data
+        self.__distancia = distancia
+        self.__tempo = tempo
+
+    # Getters e Setters
+    def get_id(self): return self.__id
+    def set_id(self, id): self.__id = id
+
+    def get_data(self): return self.__data
+    def set_data(self, data): self.__data = data
+
+    def get_distancia(self): return self.__distancia
+    def set_distancia(self, distancia): self.__distancia = distancia
+
+    def get_tempo(self): return self.__tempo
+    def set_tempo(self, tempo): self.__tempo = tempo
+
+    # Método Pace (Tempo / Distância)
+    def pace(self) -> timedelta:
+        if self.__distancia <= 0:
+            return timedelta(0)
+        segundos_totais = self.__tempo.total_seconds()
+        pace_segundos = segundos_totais / self.__distancia
+        return timedelta(seconds=pace_segundos)
+
+    def __str__(self):
+        pace_td = self.pace()
+        total_segundos = int(pace_td.total_seconds())
+        minutos = total_segundos // 60
+        segundos = total_segundos % 60
+        data_str = self.__data.strftime("%d/%m/%Y %H:%M")
+        return (f"ID: {self.__id} | Data: {data_str} | "
+                f"Distância: {self.__distancia:.2f} km | Tempo: {self.__tempo} | "
+                f"Pace: {minutos:02d}:{segundos:02d} min/km")
+
+
+class TreinoUI:
+    def __init__(self):
+        self.__treinos = []
+
+    def menu(self) -> int:
+        print("\n--- MENU TREINO ---")
+        print("1 - Inserir novo treino")
+        print("2 - Listar todos os treinos")
+        print("3 - Listar treino por ID")
+        print("4 - Atualizar treino")
+        print("5 - Excluir treino")
+        print("6 - Treino mais rápido")
+        print("0 - Sair do Menu Treino")
+        try:
+            return int(input("Escolha uma opção: "))
+        except ValueError:
+            return -1
+
+    def main(self):
+        op = -1
+        while op != 0:
+            op = self.menu()
+            if op == 1:
+                self.inserir()
+            elif op == 2:
+                self.listar()
+            elif op == 3:
+                self.listar_id()
+            elif op == 4:
+                self.atualizar()
+            elif op == 5:
+                self.excluir()
+            elif op == 6:
+                self.mais_rapido()
+            elif op == 0:
+                print("Encerrando módulo Treino...")
+            else:
+                print("Opção inválida!")
+
+    def inserir(self):
+        try:
+            id_t = int(input("ID: "))
+            data_str = input("Data e Hora (dd/mm/aaaa hh:mm): ")
+            dt = datetime.strptime(data_str, "%d/%m/%Y %H:%M")
+            dist = float(input("Distância (km): "))
+            horas = int(input("Tempo - Horas: "))
+            minutos = int(input("Tempo - Minutos: "))
+            segundos = int(input("Tempo - Segundos: "))
+            tempo = timedelta(hours=horas, minutes=minutos, seconds=segundos)
+
+            novo_treino = Treino(id_t, dt, dist, tempo)
+            self.__treinos.append(novo_treino)
+            print("Treino inserido com sucesso!")
+        except Exception as e:
+            print(f"Erro ao inserir treino: {e}")
+
+    def listar(self):
+        if not self.__treinos:
+            print("Nenhum treino cadastrado.")
+            return
+        for t in self.__treinos:
+            print(t)
+
+    def listar_id(self):
+        try:
+            id_busca = int(input("Informe o ID do treino: "))
+            for t in self.__treinos:
+                if t.get_id() == id_busca:
+                    print(t)
+                    return
+            print("Treino não encontrado.")
+        except ValueError:
+            print("ID inválido.")
+
+    def atualizar(self):
+        try:
+            id_busca = int(input("Informe o ID do treino a atualizar: "))
+            for t in self.__treinos:
+                if t.get_id() == id_busca:
+                    data_str = input("Nova Data e Hora (dd/mm/aaaa hh:mm): ")
+                    dt = datetime.strptime(data_str, "%d/%m/%Y %H:%M")
+                    dist = float(input("Nova Distância (km): "))
+                    horas = int(input("Novo Tempo - Horas: "))
+                    minutos = int(input("Novo Tempo - Minutos: "))
+                    segundos = int(input("Novo Tempo - Segundos: "))
+                    tempo = timedelta(hours=horas, minutes=minutos, seconds=segundos)
+
+                    t.set_data(dt)
+                    t.set_distancia(dist)
+                    t.set_tempo(tempo)
+                    print("Treino atualizado com sucesso!")
+                    return
+            print("Treino não encontrado.")
+        except Exception as e:
+            print(f"Erro ao atualizar: {e}")
+
+    def excluir(self):
+        try:
+            id_busca = int(input("Informe o ID do treino a excluir: "))
+            for t in self.__treinos:
+                if t.get_id() == id_busca:
+                    self.__treinos.remove(t)
+                    print("Treino excluído com sucesso!")
+                    return
+            print("Treino não encontrado.")
+        except ValueError:
+            print("ID inválido.")
+
+    def mais_rapido(self):
+        if not self.__treinos:
+            print("Nenhum treino cadastrado.")
+            return
+        mais_rapido = min(self.__treinos, key=lambda t: t.pace())
+        print("--- Treino Mais Rápido (Menor Pace) ---")
+        print(mais_rapido)
+
+
+# ==============================================================================
+# 2. APLICAÇÃO PLAYLIST
+# ==============================================================================
+
+class Musica:
+    def __init__(self, id: int, titulo: str, artista: str, album: str, duracao: timedelta):
+        self.__id = id
+        self.__titulo = titulo
+        self.__artista = artista
+        self.__album = album
+        self.__duracao = duracao
+
+    def get_id(self): return self.__id
+    def set_id(self, id): self.__id = id
+
+    def get_titulo(self): return self.__titulo
+    def set_titulo(self, titulo): self.__titulo = titulo
+
+    def get_artista(self): return self.__artista
+    def set_artista(self, artista): self.__artista = artista
+
+    def get_album(self): return self.__album
+    def set_album(self, album): self.__album = album
+
+    def get_duracao(self): return self.__duracao
+    def set_duracao(self, duracao): self.__duracao = duracao
+
+    def __str__(self):
+        return f"ID: {self.__id} | Música: {self.__titulo} | Artista: {self.__artista} | Álbum: {self.__album} | Duração: {self.__duracao}"
+
+
+class PlayList:
+    def __init__(self, id: int, nome: str, descricao: str):
+        self.__id = id
+        self.__nome = nome
+        self.__descricao = descricao
+
+    def get_id(self): return self.__id
+    def set_id(self, id): self.__id = id
+
+    def get_nome(self): return self.__nome
+    def set_nome(self, nome): self.__nome = nome
+
+    def get_descricao(self): return self.__descricao
+    def set_descricao(self, descricao): self.__descricao = descricao
+
+    def tempo_total(self, itens_playlist, lista_musicas) -> timedelta:
+        total = timedelta()
+        for item in itens_playlist:
+            if item.get_id_playlist() == self.__id:
+                for m in lista_musicas:
+                    if m.get_id() == item.get_id_musica():
+                        total += m.get_duracao()
+        return total
+
+    def __str__(self):
+        return f"ID: {self.__id} | Playlist: {self.__nome} | Descrição: {self.__descricao}"
+
+
+class PlayListItem:
+    def __init__(self, id: int, id_playlist: int, id_musica: int, data_inclusao: datetime, sequencia: int):
+        self.__id = id
+        self.__id_playlist = id_playlist
+        self.__id_musica = id_musica
+        self.__data_inclusao = data_inclusao
+        self.__sequencia = sequencia
+
+    def get_id(self): return self.__id
+    def set_id(self, id): self.__id = id
+
+    def get_id_playlist(self): return self.__id_playlist
+    def set_id_playlist(self, id_playlist): self.__id_playlist = id_playlist
+
+    def get_id_musica(self): return self.__id_musica
+    def set_id_musica(self, id_musica): self.__id_musica = id_musica
+
+    def get_data_inclusao(self): return self.__data_inclusao
+    def set_data_inclusao(self, data_inclusao): self.__data_inclusao = data_inclusao
+
+    def get_sequencia(self): return self.__sequencia
+    def set_sequencia(self, sequencia): self.__sequencia = sequencia
+
+    def __str__(self):
+        dt_str = self.__data_inclusao.strftime("%d/%m/%Y %H:%M")
+        return f"Item ID: {self.__id} | Playlist ID: {self.__id_playlist} | Música ID: {self.__id_musica} | Seq: {self.__sequencia} | Adicionado em: {dt_str}"
+
+
+class UI:
+    def __init__(self):
+        self.__playlists = []
+        self.__musicas = []
+        self.__itens = []
+
+    def menu(self) -> int:
+        print("\n=== MENU PLAYLIST ===")
+        print("1  - Inserir Música")
+        print("2  - Listar Músicas")
+        print("3  - Atualizar Música")
+        print("4  - Excluir Música")
+        print("5  - Inserir Playlist")
+        print("6  - Listar Playlists (com Tempo Total)")
+        print("7  - Atualizar Playlist")
+        print("8  - Excluir Playlist")
+        print("9  - Adicionar Música à Playlist (Item)")
+        print("10 - Listar Músicas de uma Playlist")
+        print("11 - Atualizar Item da Playlist")
+        print("12 - Remover Música da Playlist (Excluir Item)")
+        print("0  - Sair do Menu Playlist")
+        try:
+            return int(input("Opção: "))
+        except ValueError:
+            return -1
+
+    def main(self):
+        op = -1
+        while op != 0:
+            op = self.menu()
+            if op == 1: self.inserir_musica()
+            elif op == 2: self.listar_musicas()
+            elif op == 3: self.atualizar_musica()
+            elif op == 4: self.excluir_musica()
+            elif op == 5: self.inserir_playlist()
+            elif op == 6: self.listar_playlists()
+            elif op == 7: self.atualizar_playlist()
+            elif op == 8: self.excluir_playlist()
+            elif op == 9: self.inserir_item()
+            elif op == 10: self.listar_itens_playlist()
+            elif op == 11: self.atualizar_item()
+            elif op == 12: self.excluir_item()
+            elif op == 0: print("Encerrando módulo Playlist...")
+            else: print("Opção inválida.")
+
+    def inserir_musica(self):
+        try:
+            i = int(input("ID da Música: "))
+            t = input("Título: ")
+            art = input("Artista: ")
+            alb = input("Álbum: ")
+            minutos = int(input("Duração - Minutos: "))
+            segundos = int(input("Duração - Segundos: "))
+            dur = timedelta(minutes=minutos, seconds=segundos)
+            self.__musicas.append(Musica(i, t, art, alb, dur))
+            print("Música cadastrada!")
+        except Exception as e: print(f"Erro: {e}")
+
+    def listar_musicas(self):
+        if not self.__musicas: print("Nenhuma música cadastrada.")
+        for m in self.__musicas: print(m)
+
+    def atualizar_musica(self):
+        id_m = int(input("ID da música a atualizar: "))
+        for m in self.__musicas:
+            if m.get_id() == id_m:
+                m.set_titulo(input("Novo Título: "))
+                m.set_artista(input("Novo Artista: "))
+                m.set_album(input("Novo Álbum: "))
+                minutos = int(input("Novos Minutos: "))
+                segundos = int(input("Novos Segundos: "))
+                m.set_duracao(timedelta(minutes=minutos, seconds=segundos))
+                print("Música atualizada!")
+                return
+        print("Música não encontrada.")
+
+    def excluir_musica(self):
+        id_m = int(input("ID da música a excluir: "))
+        for m in self.__musicas:
+            if m.get_id() == id_m:
+                self.__musicas.remove(m)
+                self.__itens = [it for it in self.__itens if it.get_id_musica() != id_m]
+                print("Música e suas associações foram excluídas!")
+                return
+        print("Música não encontrada.")
+
+    def inserir_playlist(self):
+        try:
+            i = int(input("ID da Playlist: "))
+            n = input("Nome: ")
+            d = input("Descrição: ")
+            self.__playlists.append(PlayList(i, n, d))
+            print("Playlist criada!")
+        except Exception as e: print(f"Erro: {e}")
+
+    def listar_playlists(self):
+        if not self.__playlists: print("Nenhuma playlist cadastrada.")
+        for p in self.__playlists:
+            tempo = p.tempo_total(self.__itens, self.__musicas)
+            print(f"{p} | Tempo Total: {tempo}")
+
+    def atualizar_playlist(self):
+        id_p = int(input("ID da playlist a atualizar: "))
+        for p in self.__playlists:
+            if p.get_id() == id_p:
+                p.set_nome(input("Novo Nome: "))
+                p.set_descricao(input("Nova Descrição: "))
+                print("Playlist atualizada!")
+                return
+        print("Playlist não encontrada.")
+
+    def excluir_playlist(self):
+        id_p = int(input("ID da playlist a excluir: "))
+        for p in self.__playlists:
+            if p.get_id() == id_p:
+                self.__playlists.remove(p)
+                self.__itens = [it for it in self.__itens if it.get_id_playlist() != id_p]
+                print("Playlist excluída!")
+                return
+        print("Playlist não encontrada.")
+
+    def inserir_item(self):
+        try:
+            i = int(input("ID do Item: "))
+            ip = int(input("ID da Playlist: "))
+            im = int(input("ID da Música: "))
+            seq = int(input("Sequência: "))
+            dt = datetime.now()
+            self.__itens.append(PlayListItem(i, ip, im, dt, seq))
+            print("Música associada à playlist!")
+        except Exception as e: print(f"Erro: {e}")
+
+    def listar_itens_playlist(self):
+        id_p = int(input("ID da Playlist: "))
+        itens_filtrados = [it for it in self.__itens if it.get_id_playlist() == id_p]
+        itens_filtrados.sort(key=lambda x: x.get_sequencia())
+        
+        if not itens_filtrados:
+            print("Nenhuma música nesta playlist.")
+            return
+
+        print(f"\n--- Músicas da Playlist ID {id_p} ---")
+        for item in itens_filtrados:
+            musica = next((m for m in self.__musicas if m.get_id() == item.get_id_musica()), None)
+            nome_m = musica.get_titulo() if musica else "Desconhecida"
+            print(f"Ordem {item.get_sequencia()}º | Música: {nome_m} (ID: {item.get_id_musica()}) | Adicionada em: {item.get_data_inclusao().strftime('%d/%m/%Y')}")
+
+    def atualizar_item(self):
+        id_item = int(input("ID do Item a atualizar: "))
+        for it in self.__itens:
+            if it.get_id() == id_item:
+                it.set_sequencia(int(input("Nova Sequência: ")))
+                print("Item atualizado!")
+                return
+        print("Item não encontrado.")
+
+    def excluir_item(self):
+        id_item = int(input("ID do Item a excluir: "))
+        for it in self.__itens:
+            if it.get_id() == id_item:
+                self.__itens.remove(it)
+                print("Item removido da playlist!")
+                return
+        print("Item não encontrado.")
+
+
+# ==============================================================================
+# MENU GERAL DE EXECUÇÃO
+# ==============================================================================
+
+if __name__ == "__main__":
+    op = -1
+    while op != 0:
+        print("\n================ MENU PRINCIPAL ================")
+        print("1 - Executar Aplicação Treino")
+        print("2 - Executar Aplicação Playlist")
+        print("0 - Encerrar Programa")
+        try:
+            op = int(input("Escolha uma aplicação: "))
+            if op == 1:
+                treino_ui = TreinoUI()
+                treino_ui.main()
+            elif op == 2:
+                playlist_ui = UI()
+                playlist_ui.main()
+            elif op == 0:
+                print("Programa finalizado.")
+            else:
+                print("Opção inválida.")
+        except ValueError:
+            print("Por favor, digite um número válido.")
